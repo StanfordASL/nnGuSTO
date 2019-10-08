@@ -1,4 +1,5 @@
 export Astrobee
+using ForwardDiff
 
 mutable struct Astrobee
     # state: r v p ω
@@ -173,33 +174,79 @@ end
 # --------------------------------------------
 # -               CONSTRAINTS                -
 
-function collect_nonlinear_constraints(model::Astrobee, X, U, Xp, Up)
-	x_dim, u_dim = model.x_dim, model.u_dim
-	N            = length(X[1,:])
+function collect_nonlinear_constraints(model::Astrobee, X)
+	x_dim        = model.x_dim
 	num_obstacles = length(model.obstacles)
-	g = zeros(2*x_dim*N + num_obstacles*N)
-	
-	for k = 1:N
-		for i = 1:x_dim
-			g[(k-1)*x_dim + i] = state_min_convex_constraints(model, X, U, Xp, Up, k, i)			
-		end
-	end
-	for k = 1:N
-		for i = 1:x_dim
-			g[N*x_dim + (k-1)*x_dim + i] = state_max_convex_constraints(model, X, U, Xp, Up, k, i)
-		end
-	end
-	for k = 1:N
-		for obs_i = 1:num_obstacles
-			g[2*N*x_dim + (k-1)*num_obstacles + i] = obstacle_constraint(model, X, U, Xp, Up, k, obs_i)
-		end
-	end
+    g_dim = 2*x_dim + num_obstacles
+    g = zeros(g_dim)
+	g[1:x_dim] = X - model.x_max
+	# for i = 1:x_dim
+	# 	# g[(k-1)*x_dim + i] = state_min_convex_constraints(model, X, U, Xp, Up, k, i)
+ #        # println("Size of x ",size(X[i]))
+ #        # println("Size of x_max ",size(model.x_max[i]))
+ #        # println("Size of g ",size(X[i] - model.x_max[i]))
+ #        # println("Size of g again",size(X - model.x_max))
+ #        g[i] = X[i] - model.x_max[i]			
+	# end
+	# for i = 1:x_dim
+ #        # g[x_dim + i] = model.x_min[i] - X[i]
+	# 	# g[N*x_dim + (k-1)*x_dim + i] = state_max_convex_constraints(model, X, U, Xp, Up, k, i)
+	# end
+	# for obs_i = 1:num_obstacles
+	# 	# g[2*x_dim + obs_i] = obstacle_constraint_at_a_point(model, X, obs_i)
+	# end
 	return g
 end
 
-function derivative_collect_nonlinear_constraints(model::Astrobee, X, U, Xp, Up)
-	dg = ForwardDiff.jacobian(X -> collect_nonlinear_constraints(model, X, U, Xp, Up),X)
-	return dg
+# function derivative_collect_nonlinear_constraints(model::Astrobee, X)
+# 	dg = ForwardDiff.jacobian(z -> collect_nonlinear_constraints(model, z),X)
+# 	return dg
+# end
+
+function derivative_collect_nonlinear_constraints(model::Astrobee, x)
+    #return gradient(x -> Vfunc(x,param),z,GradientConfig(x -> Vfunc(x,param),x,Chunk{1}()),Val{false}())
+
+    x_dim         = model.x_dim
+    num_obstacles = length(model.obstacles)
+    g_dim         = 2*x_dim + num_obstacles
+
+    ε = 1.0e-3
+    
+    xε = zeros(x_dim)
+    x_ε = zeros(x_dim)
+    x2ε = zeros(x_dim)
+    x_2ε = zeros(x_dim)
+    gε = zeros(g_dim)
+    g_ε = zeros(g_dim)
+    g2ε = zeros(g_dim)
+    g_2ε = zeros(g_dim)
+
+    ∇g = zeros(g_dim, x_dim)
+
+    for i = 1:x_dim
+        for j = 1:x_dim
+            if j == i
+                xε[j] = x[j] + ε
+                x_ε[j] = x[j] - ε
+                x2ε[j] = x[j] + 2*ε
+                x_2ε[j] = x[j] - 2*ε
+            else
+                xε[j] = x[j]
+                x_ε[j] = x[j]
+                x2ε[j] = x[j]
+                x_2ε[j] = x[j]
+            end
+        end
+
+        gε = collect_nonlinear_constraints(model, xε)
+        g_ε = collect_nonlinear_constraints(model, x_ε)
+        g2ε = collect_nonlinear_constraints(model, x2ε)
+        g_2ε = collect_nonlinear_constraints(model, x_2ε)
+
+        ∇g[:,i] = (-g2ε + 8*gε - 8*g_ε + g_2ε)/(12*ε)
+    end
+
+    return ∇g
 end
 
 function state_max_convex_constraints(model::Astrobee, X, U, Xp, Up, k, i)
@@ -268,7 +315,18 @@ function state_final_constraints(model::Astrobee, X, U, Xp, Up)
     return (X[:,end] - model.x_final)
 end
 
+function obstacle_constraint_at_a_point(model::Astrobee, X, obs_i)
+    p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
+    bot_radius        = model.model_radius
+    total_radius      = obs_radius+ bot_radius
 
+    p_k  = X[1:3]
+    
+    dist = norm(p_k - p_obs, 2)
+
+    constraint = - ( dist - total_radius )
+    return constraint
+end
 
 function obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
     p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
@@ -434,7 +492,7 @@ function B_dyn(x::Vector, u::Vector, model::Astrobee)
   return B
 end
 
-function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee, X, U, Xp, Up, omega)
+function f_dyn_shooting(x, u, p, model::Astrobee, X, U, Xp, Up, omega)
     fs = zeros(2*model.x_dim)
 
     r, v, w             = x[1:3], x[4:6], x[11:13]
@@ -473,11 +531,12 @@ function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee, X, U, 
 	
     # T2 = 2*omega*(g-lambda)*(dg/dx)
     T2 = zeros(model.x_dim)
-    lambda_min, lambda_max = model.lambda_shooting_min, model.lambda_shooting_max
-    g = collect_nonlinear_constraints(model, X, U, Xp, Up)
-    dg = derivative_collect_nonlinear_constraints(model, X, U, Xp, Up)
-    lambda = get_lambda_shooting(model, X, U, Xp, Up, lambda_min, lambda_max)
-    T2 = 2*omega*(g - lambda)*dg # (g-lambda) is vector of size g_dim,1 and dg is matrix of size g_dim,x_dim
+    g = collect_nonlinear_constraints(model, x)
+    dg = derivative_collect_nonlinear_constraints(model, x)
+    lambda = get_lambda_shooting(model, x)
+    # println(size(g-lambda))
+    # println(size((g-lambda)'*dg))
+    T2 = 2*omega*((g - lambda)'*dg)' # (g-lambda) is vector of size g_dim,1 and dg is matrix of size g_dim,x_dim
 
     # pdot = T1 + T2
     fs[14:26] = T1 + T2
@@ -556,19 +615,19 @@ function get_control_shooting(x::Vector, p::Vector, model::Astrobee)
     return us
 end
 
-function get_lambda_shooting(model::Astrobee, X, U, Xp, Up, lambda_min::Vector, lambda_max::Vector)
-	g = collect_nonlinear_constraints(model::Astrobee, X, U, Xp, Up)
-	x_dim, u_dim = model.x_dim, model.u_dim
-	N, dt        = length(X[1,:]), scp_problem.dt
+function get_lambda_shooting(model::Astrobee, x)
+	g = collect_nonlinear_constraints(model, x)
+	x_dim = model.x_dim
 	num_obstacles = length(model.obstacles)
-	g_dim = 2*x_dim*N + num_obstacles*N
+	g_dim = 2*x_dim + num_obstacles
 	lambda = zeros(g_dim)
+    lambda_min, lambda_max = model.lambda_shooting_min, model.lambda_shooting_max
 	
 	for i = 1:g_dim
-		if g[i] <= lambda_min[i]
-			lambda[i] = lambda_min[i]
-		elseif g[i] >= lambda_max[i]
-			lambda[i] = lambda_max[i]
+		if g[i] <= lambda_min
+			lambda[i] = lambda_min
+		elseif g[i] >= lambda_max
+			lambda[i] = lambda_max
 		else
 			lambda[i] = g[i]
 		end
