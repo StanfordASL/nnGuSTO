@@ -41,6 +41,10 @@ mutable struct Astrobee
     beta_fail
     gamma_fail
     convergence_threshold
+
+    # Shooting parameters 
+    lambda_shooting_min
+    lambda_shooting_max
 end
 
 function Astrobee()
@@ -84,6 +88,10 @@ function Astrobee()
     beta_fail = 0.1
     gamma_fail = 5.
     convergence_threshold = 0.5
+
+    # Shooting parameters 
+    lambda_shooting_min = -1e3
+    lambda_shooting_max = -1e-6
 
 
     # sphere obstacles [(x,y),r]
@@ -424,7 +432,7 @@ function B_dyn(x::Vector, u::Vector, model::Astrobee)
   return B
 end
 
-function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee)
+function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee, X, U, Xp, Up, omega)
     fs = zeros(2*model.x_dim)
 
     r, v, w             = x[1:3], x[4:6], x[11:13]
@@ -444,20 +452,47 @@ function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee)
     fs[9]   += 1/2*( wy*qw + wz*qx - wx*qz)
     fs[10]  += 1/2*( wz*qw - wy*qx + wx*qy)
     fs[11:13] = model.Jinv*(M - cross(w[:],(model.J*w)))    # wdot
+	
+	# Dual variables pdot = - p*df/dx + 2*omega*(g-lambda)*(dg/dx) = T1 + T2
+    # T1 = - p*df/dx
+	T1 = zeros(model.x_dim)    
+    T1[4] += -prx
+    T1[5] += -pry
+    T1[6] += -prz
 
-    # Dual variables
-    fs[17] += -prx
-    fs[18] += -pry
-    fs[19] += -prz
+    T1[7] += -1/2*( pqx*wx + pqy*wy + pqz*wz)
+    T1[8] += -1/2*(-pqw*wx + pqy*wz - pqz*wy)
+    T1[9] += -1/2*(-pqw*wy - pqx*wz + pqz*wx)
+    T1[10] += -1/2*(-pqw*wz + pqx*wy - pqy*wx)
 
-    fs[20] += -1/2*( pqx*wx + pqy*wy + pqz*wz)
-    fs[21] += -1/2*(-pqw*wx + pqy*wz - pqz*wy)
-    fs[22] += -1/2*(-pqw*wy - pqx*wz + pqz*wx)
-    fs[23] += -1/2*(-pqw*wz + pqx*wy - pqy*wx)
+    T1[11] += -1/2*(-pqw*qx + pqx*qw - pqy*qz + pqz*qy)
+    T1[12] += -1/2*(-pqw*qy + pqx*qz + pqy*qw - pqz*qx)
+    T1[13] += -1/2*(-pqw*qz - pqx*qy + pqy*qx + pqz*qw)
+	
+    # T2 = 2*omega*(g-lambda)*(dg/dx)
+    T2 = zeros(model.x_dim)
+    lambda_min, lambda_max = model.lambda_shooting_min, model.lambda_shooting_max
+    g = collect_nonlinear_constraints(model, X, U, Xp, Up)
+    dg = derivative_collect_nonlinear_constraints(model, X, U, Xp, Up)
+    lambda = get_lambda_shooting(model, X, U, Xp, Up, lambda_min, lambda_max)
+    T2 = 2*omega*(g - lambda)*dg # (g-lambda) is vector of size g_dim,1 and dg is matrix of size g_dim,x_dim
 
-    fs[24] += -1/2*(-pqw*qx + pqx*qw - pqy*qz + pqz*qy)
-    fs[25] += -1/2*(-pqw*qy + pqx*qz + pqy*qw - pqz*qx)
-    fs[26] += -1/2*(-pqw*qz - pqx*qy + pqy*qx + pqz*qw)
+    # pdot = T1 + T2
+    fs[14:26] = T1 + T2
+
+    # OLD (incorrect?) Dual variables
+    # fs[17] += -prx
+    # fs[18] += -pry
+    # fs[19] += -prz
+
+    # fs[20] += -1/2*( pqx*wx + pqy*wy + pqz*wz)
+    # fs[21] += -1/2*(-pqw*wx + pqy*wz - pqz*wy)
+    # fs[22] += -1/2*(-pqw*wy - pqx*wz + pqz*wx)
+    # fs[23] += -1/2*(-pqw*wz + pqx*wy - pqy*wx)
+
+    # fs[24] += -1/2*(-pqw*qx + pqx*qw - pqy*qz + pqz*qy)
+    # fs[25] += -1/2*(-pqw*qy + pqx*qz + pqy*qw - pqz*qx)
+    # fs[26] += -1/2*(-pqw*qz - pqx*qy + pqy*qx + pqz*qw)
 
     return fs
 end

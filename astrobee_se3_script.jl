@@ -126,7 +126,7 @@ function shooting_ode(scp_problem::GuSTOProblem,model,xdot,x,t)
 
     # Add contributions
     xdot[:] = zeros(2*x_dim)
-    xdot[:]      = f_dyn_shooting(x, u, p, model)
+    xdot[:]      = f_dyn_shooting(x, u, p, model, scp_problem.X, scp_problem.U, scp_problem.Xp, scp_problem.Up, scp_problem.omega)
     # xdot[14:26] += state_convex_constraints_penalty_shooting(model, x)
     # xdot[14:16] += obs_avoidance_penalty_grad_all_shooting(model, x)
 end

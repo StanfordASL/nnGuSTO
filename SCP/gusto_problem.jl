@@ -157,17 +157,21 @@ function add_penalties(scp_problem::GuSTOProblem, model)
     # penalized constraints
     for k = 1:N
         for i = 1:x_dim
-            lambda_max     = lambdas_state_max_convex_constraints[i,k]
+            lambda_state_max     = lambdas_state_max_convex_constraints[i,k]
             constraint_max = state_max_convex_constraints(model, X, U, Xp, Up, k, i)
-            lambda_min     = lambdas_state_min_convex_constraints[i,k]
+            lambda_state_min     = lambdas_state_min_convex_constraints[i,k]
             constraint_min = state_min_convex_constraints(model, X, U, Xp, Up, k, i)
 
-            @constraint(solver_model, lambda_max <= -1e-6)
-	    @constraint(solver_model, -1e3-lambda_max <= 0)
-            penalization += omega*(constraint_max-lambda_max)^2
-            @constraint(solver_model, lambda_min <= -1e-6)
-            @constraint(solver_model, -1e3-lambda_min <= 0)
-            penalization += omega*(constraint_min-lambda_min)^2
+            # All lambdas should stay within these limits (both negative)
+            min_val = model.lambda_shooting_min
+            max_val = model.lambda_shooting_max
+
+            @constraint(solver_model, lambda_state_max <= max_val)
+            @constraint(solver_model, min_val-lambda_state_max <= 0)
+            penalization += omega*(constraint_max-lambda_state_max)^2
+            @constraint(solver_model, lambda_state_min <= max_val)
+            @constraint(solver_model, min_val-lambda_state_min <= 0)
+            penalization += omega*(constraint_min-lambda_state_min)^2
         end
     end
     # -----------------
@@ -178,15 +182,15 @@ function add_penalties(scp_problem::GuSTOProblem, model)
     @variable(solver_model, lambdas_trust_min_convex_constraints[i=1:x_dim, k=1:N])
     for k = 1:N
         for i = 1:x_dim
-            lambda_max     = lambdas_state_max_convex_constraints[i,k]
+            lambda_state_max     = lambdas_state_max_convex_constraints[i,k]
             constraint_max = trust_region_max_constraints(model, X, U, Xp, Up, k, i, Delta)
-            lambda_min     = lambdas_state_min_convex_constraints[i,k]
+            lambda_state_min     = lambdas_state_min_convex_constraints[i,k]
             constraint_min = trust_region_min_constraints(model, X, U, Xp, Up, k, i, Delta)
 
-            @constraint(solver_model, lambda_max <= 0.)
-            penalization += omega*(constraint_max-lambda_max)^2
-            @constraint(solver_model, lambda_min <= 0.)
-            penalization += omega*(constraint_min-lambda_min)^2
+            @constraint(solver_model, lambda_state_max <= 0.)
+            penalization += omega*(constraint_max-lambda_state_max)^2
+            @constraint(solver_model, lambda_state_min <= 0.)
+            penalization += omega*(constraint_min-lambda_state_min)^2
         end
     end
     # -----------------
