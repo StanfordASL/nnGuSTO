@@ -117,7 +117,9 @@ function Astrobee()
                 beta_succ,
                 beta_fail,
                 gamma_fail,
-                convergence_threshold)
+                convergence_threshold,
+                lambda_shooting_min,
+                lambda_shooting_max)
 end
 
 function get_initial_gusto_parameters(m::Astrobee)
@@ -173,7 +175,7 @@ end
 
 function collect_nonlinear_constraints(model::Astrobee, X, U, Xp, Up)
 	x_dim, u_dim = model.x_dim, model.u_dim
-	N, dt        = length(X[1,:]), scp_problem.dt
+	N            = length(X[1,:])
 	num_obstacles = length(model.obstacles)
 	g = zeros(2*x_dim*N + num_obstacles*N)
 	

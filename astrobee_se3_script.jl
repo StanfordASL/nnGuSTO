@@ -81,7 +81,7 @@ function parameterized_shooting_eval!(F, scp_problem::GuSTOProblem,model,dual_va
     #prob = ODEProblem(shooting_ode_func!, x0, tspan, -1)
     #sol = DifferentialEquations.solve(prob, dtmin=dt_min, force_dtmin=true, saveat=dt_min)
 
-    (time,sol_shooting) = solveRK4(GuSTOProblem,model,shooting_ode,2*x_dim,N,tf,x0)
+    (time,sol_shooting) = solveRK4(scp_problem,model,shooting_ode,2*x_dim,N,tf,x0)
 
     #sol_shooting = hcat(sol.u...)
     x_shooting, p_shooting = sol_shooting[1:x_dim,:], sol_shooting[x_dim+1:end,:]
