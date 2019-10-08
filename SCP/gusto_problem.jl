@@ -1,4 +1,5 @@
 export GuSTOProblem
+using ForwardDiff
 
 mutable struct GuSTOProblem
     dt
@@ -162,8 +163,10 @@ function add_penalties(scp_problem::GuSTOProblem, model)
             constraint_min = state_min_convex_constraints(model, X, U, Xp, Up, k, i)
 
             @constraint(solver_model, lambda_max <= -1e-6)
+	    @constraint(solver_model, -1e3-lambda_max <= 0)
             penalization += omega*(constraint_max-lambda_max)^2
             @constraint(solver_model, lambda_min <= -1e-6)
+            @constraint(solver_model, -1e3-lambda_min <= 0)
             penalization += omega*(constraint_min-lambda_min)^2
         end
     end

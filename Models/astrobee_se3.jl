@@ -162,6 +162,36 @@ end
 
 # --------------------------------------------
 # -               CONSTRAINTS                -
+
+function collect_nonlinear_constraints(model::Astrobee, X, U, Xp, Up)
+	x_dim, u_dim = model.x_dim, model.u_dim
+	N, dt        = length(X[1,:]), scp_problem.dt
+	num_obstacles = length(model.obstacles)
+	g = zeros(2*x_dim*N + num_obstacles*N)
+	
+	for k = 1:N
+		for i = 1:x_dim
+			g[(k-1)*x_dim + i] = state_min_convex_constraints(model, X, U, Xp, Up, k, i)			
+		end
+	end
+	for k = 1:N
+		for i = 1:x_dim
+			g[N*x_dim + (k-1)*x_dim + i] = state_max_convex_constraints(model, X, U, Xp, Up, k, i)
+		end
+	end
+	for k = 1:N
+		for obs_i = 1:num_obstacles
+			g[2*N*x_dim + (k-1)*num_obstacles + i] = obstacle_constraint(model, X, U, Xp, Up, k, obs_i)
+		end
+	end
+	return g
+end
+
+function derivative_collect_nonlinear_constraints(model::Astrobee, X, U, Xp, Up)
+	dg = ForwardDiff.jacobian(X -> collect_nonlinear_constraints(model, X, U, Xp, Up),X)
+	return dg
+end
+
 function state_max_convex_constraints(model::Astrobee, X, U, Xp, Up, k, i)
     return (X[i, k] - model.x_max[i])
 end
@@ -487,4 +517,24 @@ function get_control_shooting(x::Vector, p::Vector, model::Astrobee)
     us = vcat(F, M)
     
     return us
+end
+
+function get_lambda_shooting(model::Astrobee, X, U, Xp, Up, lambda_min::Vector, lambda_max::Vector)
+	g = collect_nonlinear_constraints(model::Astrobee, X, U, Xp, Up)
+	x_dim, u_dim = model.x_dim, model.u_dim
+	N, dt        = length(X[1,:]), scp_problem.dt
+	num_obstacles = length(model.obstacles)
+	g_dim = 2*x_dim*N + num_obstacles*N
+	lambda = zeros(g_dim)
+	
+	for i = 1:g_dim
+		if g[i] <= lambda_min[i]
+			lambda[i] = lambda_min[i]
+		elseif g[i] >= lambda_max[i]
+			lambda[i] = lambda_max[i]
+		else
+			lambda[i] = g[i]
+		end
+	end
+    return lambda
 end

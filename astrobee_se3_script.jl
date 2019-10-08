@@ -9,7 +9,7 @@ include("./SCP/gusto_problem.jl")
 
 
 
-function solveRK4(scp_problem::GuSTOProblem,model,dynamics::Function,dim,N,tf,z0,t0=0.0)
+function solveRK4(scp_problem::GuSTOProblem,model,dynamics,dim,N,tf,z0,t0=0.0)
     h = (tf - t0)/(N - 1)
     t = zeros(N)
     z = zeros(dim,N)
@@ -68,18 +68,22 @@ end
 
 
 function parameterized_shooting_eval!(F, scp_problem::GuSTOProblem,model,dual_variable)
+    x_dim = model.x_dim
     x_init, x_goal, tf = model.x_init, model.x_final, model.tf_guess
     dt_min             = scp_problem.dt
 
+    N = length(scp_problem.X[1,:])
     x0 = vcat(x_init, dual_variable)
 
     #tspan = (0., tf)
     #shooting_ode_func! = (x_dot,x,unused_var,t) -> shooting_ode!(x_dot, scp_problem, model, x, t)
 
-    prob = ODEProblem(shooting_ode_func!, x0, tspan, -1)
-    sol = DifferentialEquations.solve(prob, dtmin=dt_min, force_dtmin=true, saveat=dt_min)
+    #prob = ODEProblem(shooting_ode_func!, x0, tspan, -1)
+    #sol = DifferentialEquations.solve(prob, dtmin=dt_min, force_dtmin=true, saveat=dt_min)
 
-    sol_shooting = hcat(sol.u...)
+    (time,sol_shooting) = solveRK4(GuSTOProblem,model,shooting_ode,2*x_dim,N,tf,x0)
+
+    #sol_shooting = hcat(sol.u...)
     x_shooting, p_shooting = sol_shooting[1:x_dim,:], sol_shooting[x_dim+1:end,:]
 
     xN = x_shooting[:,end]
@@ -113,7 +117,7 @@ end
 
 
 
-function shooting_ode!(scp_problem::GuSTOProblem,model,xdot,x,t)
+function shooting_ode(scp_problem::GuSTOProblem,model,xdot,x,t)
     x_dim = model.x_dim
 
     x, p = x[1:x_dim], x[x_dim+1:end]
