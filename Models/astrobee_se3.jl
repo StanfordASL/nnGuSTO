@@ -46,6 +46,7 @@ mutable struct Astrobee
     # Shooting parameters 
     lambda_shooting_min
     lambda_shooting_max
+    num_constraints
 end
 
 function Astrobee()
@@ -90,17 +91,17 @@ function Astrobee()
     gamma_fail = 5.
     convergence_threshold = 0.5
 
-    # Shooting parameters 
-    lambda_shooting_min = -1e3
-    lambda_shooting_max = -1e-6
-
-
     # sphere obstacles [(x,y),r]
     obstacles = []
     obs = [[0.0,0.175,0.], 0.1]
     push!(obstacles, obs)
     obs = [[0.4,-0.10,0.], 0.1]
     push!(obstacles, obs)
+
+    # Shooting parameters 
+    num_constraints = 2*x_dim + length(obstacles)
+    lambda_shooting_min = -1e3 * ones(num_constraints)
+    lambda_shooting_max = -1e-6 * ones(num_constraints)
 
 
     Astrobee(x_dim, u_dim,
@@ -120,7 +121,8 @@ function Astrobee()
                 gamma_fail,
                 convergence_threshold,
                 lambda_shooting_min,
-                lambda_shooting_max)
+                lambda_shooting_max,
+                num_constraints)
 end
 
 function get_initial_gusto_parameters(m::Astrobee)
@@ -179,21 +181,24 @@ function collect_nonlinear_constraints(model::Astrobee, X)
 	num_obstacles = length(model.obstacles)
     g_dim = 2*x_dim + num_obstacles
     g = zeros(g_dim)
-	g[1:x_dim] = X - model.x_max
+	g[1 : x_dim] = X - model.x_max
+    g[x_dim+1 : 2*x_dim] = model.x_min - X
+    for obs_i = 1:num_obstacles
+      g[2*x_dim + obs_i] = obstacle_constraint_at_a_point(model, X, obs_i)
+    end
+
+
+
+
+    
 	# for i = 1:x_dim
-	# 	# g[(k-1)*x_dim + i] = state_min_convex_constraints(model, X, U, Xp, Up, k, i)
- #        # println("Size of x ",size(X[i]))
- #        # println("Size of x_max ",size(model.x_max[i]))
- #        # println("Size of g ",size(X[i] - model.x_max[i]))
- #        # println("Size of g again",size(X - model.x_max))
- #        g[i] = X[i] - model.x_max[i]			
+        # g[i] = X[i] - model.x_max[i]			
 	# end
 	# for i = 1:x_dim
- #        # g[x_dim + i] = model.x_min[i] - X[i]
-	# 	# g[N*x_dim + (k-1)*x_dim + i] = state_max_convex_constraints(model, X, U, Xp, Up, k, i)
+        # g[x_dim + i] = model.x_min[i] - X[i]
 	# end
 	# for obs_i = 1:num_obstacles
-	# 	# g[2*x_dim + obs_i] = obstacle_constraint_at_a_point(model, X, obs_i)
+		# g[2*x_dim + obs_i] = obstacle_constraint_at_a_point(model, X, obs_i)
 	# end
 	return g
 end
@@ -624,10 +629,10 @@ function get_lambda_shooting(model::Astrobee, x)
     lambda_min, lambda_max = model.lambda_shooting_min, model.lambda_shooting_max
 	
 	for i = 1:g_dim
-		if g[i] <= lambda_min
-			lambda[i] = lambda_min
-		elseif g[i] >= lambda_max
-			lambda[i] = lambda_max
+		if g[i] <= lambda_min[i]
+			lambda[i] = lambda_min[i]
+		elseif g[i] >= lambda_max[i]
+			lambda[i] = lambda_max[i]
 		else
 			lambda[i] = g[i]
 		end

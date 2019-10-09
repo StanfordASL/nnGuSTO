@@ -53,18 +53,23 @@ function solve_shooting(scp_problem::GuSTOProblem,model,dual_variable)
 
     # Run Newton method
     # sol_newton = nlsolve(shooting_eval!, p0, iterations = 100, ftol=1e-6)
-    sol_newton = fsolve(shooting_eval!, p0, method = :hybrd)
     # @show sol_newton.f_converged
-
-    x_shooting = []
+    # 
+    # x_shooting = []
     # if sol_newton.f_converged
     #     x_shooting = solve_shooting_once(scp_problem, model, sol_newton.zero)
     # else
     #     x_shooting = []
     # end
 
+    # Run fsolve from MINPACK.jl
+    sol_minpack = fsolve(shooting_eval!, p0, method = :hybrd)
+    @show sol_minpack.converged
+    
+    x_shooting = []
 
-    return x_shooting, sol_newton
+    # return x_shooting, sol_newton
+    return x_shooting, sol_minpack
 end
 
 

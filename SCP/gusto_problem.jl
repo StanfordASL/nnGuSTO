@@ -163,8 +163,9 @@ function add_penalties(scp_problem::GuSTOProblem, model)
             constraint_min = state_min_convex_constraints(model, X, U, Xp, Up, k, i)
 
             # All lambdas should stay within these limits (both negative)
-            min_val = model.lambda_shooting_min
-            max_val = model.lambda_shooting_max
+            # TODO fix when we have different values of lambda bounds
+            min_val = model.lambda_shooting_min[1]
+            max_val = model.lambda_shooting_max[1]
 
             @constraint(solver_model, lambda_state_max <= max_val)
             @constraint(solver_model, min_val-lambda_state_max <= 0)
