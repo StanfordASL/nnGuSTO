@@ -89,11 +89,12 @@ function Astrobee()
     beta_succ = 2.
     beta_fail = 0.1
     gamma_fail = 5.
-    convergence_threshold = 0.5
+    convergence_threshold = 1e-5
 
     # sphere obstacles [(x,y),r]
     obstacles = []
-    obs = [[0.0,0.175,0.], 0.1]
+    # obs = [[0.0,0.175,0.], 0.1]
+    obs = [[-0.2,0.0,0.], 0.1]
     push!(obstacles, obs)
     obs = [[0.4,-0.10,0.], 0.1]
     push!(obstacles, obs)
@@ -190,7 +191,7 @@ function collect_nonlinear_constraints(model::Astrobee, X)
 
 
 
-    
+
 	# for i = 1:x_dim
         # g[i] = X[i] - model.x_max[i]			
 	# end
@@ -290,27 +291,41 @@ end
 # function trust_region_constraints(model::Astrobee, X, U, Xp, Up, k, Delta)
 #     return ( sum(X[i,k]^2 for i = 1:model.x_dim) - Delta )
 # end
-function trust_region_max_constraints(model::Astrobee, X, U, Xp, Up, k, i, Delta)
-    return ( (X[i, k]-Xp[i, k]) - Delta )
-end
-function trust_region_min_constraints(model::Astrobee, X, U, Xp, Up, k, i, Delta)
-    return ( -Delta - (X[i, k]-Xp[i, k]) )
+function trust_region_sphere_constraints(model::Astrobee, X, U, Xp, Up, k, Delta)
+    return norm(X[:, k] - Xp[:,k], 2)^2 - Delta^2
 end
 function is_in_trust_region(model::Astrobee, X, U, Xp, Up, Delta)
     B_is_inside = true
 
     for k = 1:length(X[1,:])
-        for i = 1:model.x_dim
-            if trust_region_max_constraints(model, X, U, Xp, Up, k, i, Delta) > 0.
-                B_is_inside = false
-            end
-            if trust_region_min_constraints(model, X, U, Xp, Up, k, i, Delta) > 0.
-                B_is_inside = false
-            end
+        if trust_region_sphere_constraints(model, X, U, Xp, Up, k, Delta) > 0.
+            B_is_inside = false
         end
     end
     return B_is_inside
 end
+# function trust_region_max_constraints(model::Astrobee, X, U, Xp, Up, k, i, Delta)
+
+#     return ( (X[i, k]-Xp[i, k]) - Delta )
+# end
+# function trust_region_min_constraints(model::Astrobee, X, U, Xp, Up, k, i, Delta)
+#     return ( -Delta - (X[i, k]-Xp[i, k]) )
+# end
+# function is_in_trust_region(model::Astrobee, X, U, Xp, Up, Delta)
+#     B_is_inside = true
+
+#     for k = 1:length(X[1,:])
+#         for i = 1:model.x_dim
+#             if trust_region_max_constraints(model, X, U, Xp, Up, k, i, Delta) > 0.
+#                 B_is_inside = false
+#             end
+#             if trust_region_min_constraints(model, X, U, Xp, Up, k, i, Delta) > 0.
+#                 B_is_inside = false
+#             end
+#         end
+#     end
+#     return B_is_inside
+# end
 
 
 function state_initial_constraints(model::Astrobee, X, U, Xp, Up)
@@ -329,22 +344,38 @@ function obstacle_constraint_at_a_point(model::Astrobee, X, obs_i)
     
     dist = norm(p_k - p_obs, 2)
 
-    constraint = - ( dist - total_radius )
+    g = total_radius^2 - dist^2
+    constraint = g
     return constraint
 end
 
-function obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
-    p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
-    bot_radius        = model.model_radius
-    total_radius      = obs_radius+ bot_radius
+# function obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
+#     p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
+#     bot_radius        = model.model_radius
+#     total_radius      = obs_radius+ bot_radius
 
-    p_k  = X[1:3, k]
+#     p_k  = X[1:3, k]
     
-    dist = norm(p_k - p_obs, 2)
+#     dist = norm(p_k - p_obs, 2)
 
-    constraint = - ( dist - total_radius )
-    return constraint
-end
+#     constraint = - ( dist - total_radius )
+#     return constraint
+# end
+
+# function obstacle_constraint_convexified(model::Astrobee, X, U, Xp, Up, k, obs_i)
+#     p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
+#     bot_radius        = model.model_radius
+#     total_radius      = obs_radius + bot_radius
+
+#     p_k  = X[1:3, k]
+#     p_kp = Xp[1:3, k]
+    
+#     dist_prev = norm(p_kp - p_obs, 2)
+#     n_prev    = (p_kp-p_obs) / dist_prev
+
+#     constraint = - ( dist_prev - total_radius + sum(n_prev[i] * (p_k[i]-p_kp[i]) for i=1:3) )
+#     return constraint
+# end
 function obstacle_constraint_convexified(model::Astrobee, X, U, Xp, Up, k, obs_i)
     p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
     bot_radius        = model.model_radius
@@ -352,36 +383,39 @@ function obstacle_constraint_convexified(model::Astrobee, X, U, Xp, Up, k, obs_i
 
     p_k  = X[1:3, k]
     p_kp = Xp[1:3, k]
-    
-    dist_prev = norm(p_kp - p_obs, 2)
-    n_prev    = (p_kp-p_obs) / dist_prev
 
-    constraint = - ( dist_prev - total_radius + sum(n_prev[i] * (p_k[i]-p_kp[i]) for i=1:3) )
+    dist_prev = norm(p_kp - p_obs, 2)
+    g_kp = total_radius^2 - dist_prev^2 # scalar
+
+    dg_kp = -2*(p_kp - p_obs) # vector
+
+    constraint = g_kp + (dg_kp)' * (p_k - p_kp)
+    
     return constraint
 end
 
-function obs_avoidance_penalty_grad_all_shooting(model::Astrobee, x)
-    r_dot = zeros(3)
+# function obs_avoidance_penalty_grad_all_shooting(model::Astrobee, x)
+#     r_dot = zeros(3)
 
-    for obs_i = 1:length(model.obstacles)
-        p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
-        bot_radius        = model.model_radius
-        total_radius      = obs_radius + bot_radius
+#     for obs_i = 1:length(model.obstacles)
+#         p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
+#         bot_radius        = model.model_radius
+#         total_radius      = obs_radius + bot_radius
 
-        p_k  = x[1:3]
+#         p_k  = x[1:3]
     
-        dist = norm(p_k - p_obs, 2)
-        true_dist = dist - total_radius
+#         dist = norm(p_k - p_obs, 2)
+#         true_dist = dist - total_radius
 
-        n_hat = (p_k-p_obs) / dist
+#         n_hat = (p_k-p_obs) / dist
 
-        if true_dist < 0
-            r_dot += n_hat
-        end
-    end
+#         if true_dist < 0
+#             r_dot += n_hat
+#         end
+#     end
 
-    return r_dot
-end
+#     return r_dot
+# end
 # --------------------------------------------
 
 

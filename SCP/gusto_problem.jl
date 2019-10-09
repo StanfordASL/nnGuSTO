@@ -149,51 +149,62 @@ function add_penalties(scp_problem::GuSTOProblem, model)
 
     penalization = 0.
 
-    # -----------------
-    # STATE CONSTRAINTS
-    # dual variables to reformulate max(a,0) constraints
-    @variable(solver_model, lambdas_state_max_convex_constraints[i=1:x_dim, k=1:N])
-    @variable(solver_model, lambdas_state_min_convex_constraints[i=1:x_dim, k=1:N])
-    # penalized constraints
-    for k = 1:N
-        for i = 1:x_dim
-            lambda_state_max     = lambdas_state_max_convex_constraints[i,k]
-            constraint_max = state_max_convex_constraints(model, X, U, Xp, Up, k, i)
-            lambda_state_min     = lambdas_state_min_convex_constraints[i,k]
-            constraint_min = state_min_convex_constraints(model, X, U, Xp, Up, k, i)
+    # # -----------------
+    # # STATE CONSTRAINTS
+    # # dual variables to reformulate max(a,0) constraints
+    # @variable(solver_model, lambdas_state_max_convex_constraints[i=1:x_dim, k=1:N])
+    # @variable(solver_model, lambdas_state_min_convex_constraints[i=1:x_dim, k=1:N])
+    # # penalized constraints
+    # for k = 1:N
+    #     for i = 1:x_dim
+    #         lambda_state_max     = lambdas_state_max_convex_constraints[i,k]
+    #         constraint_max = state_max_convex_constraints(model, X, U, Xp, Up, k, i)
+    #         lambda_state_min     = lambdas_state_min_convex_constraints[i,k]
+    #         constraint_min = state_min_convex_constraints(model, X, U, Xp, Up, k, i)
 
-            # All lambdas should stay within these limits (both negative)
-            # TODO fix when we have different values of lambda bounds
-            min_val = model.lambda_shooting_min[1]
-            max_val = model.lambda_shooting_max[1]
+    #         # All lambdas should stay within these limits (both negative)
+    #         # TODO fix when we have different values of lambda bounds
+    #         min_val = model.lambda_shooting_min[1]
+    #         max_val = model.lambda_shooting_max[1]
 
-            @constraint(solver_model, lambda_state_max <= max_val)
-            @constraint(solver_model, min_val-lambda_state_max <= 0)
-            penalization += omega*(constraint_max-lambda_state_max)^2
-            @constraint(solver_model, lambda_state_min <= max_val)
-            @constraint(solver_model, min_val-lambda_state_min <= 0)
-            penalization += omega*(constraint_min-lambda_state_min)^2
-        end
-    end
-    # -----------------
+    #         @constraint(solver_model, lambda_state_max <= max_val)
+    #         @constraint(solver_model, min_val-lambda_state_max <= 0)
+    #         penalization += omega*(constraint_max-lambda_state_max)^2
+    #         @constraint(solver_model, lambda_state_min <= max_val)
+    #         @constraint(solver_model, min_val-lambda_state_min <= 0)
+    #         penalization += omega*(constraint_min-lambda_state_min)^2
+    #     end
+    # end
+    # # -----------------
 
     # -----------------
     # TRUST REGIONS
-    @variable(solver_model, lambdas_trust_max_convex_constraints[i=1:x_dim, k=1:N])
-    @variable(solver_model, lambdas_trust_min_convex_constraints[i=1:x_dim, k=1:N])
+    @variable(solver_model, lambdas_trust_convex_constraints[k=1:N])
     for k = 1:N
-        for i = 1:x_dim
-            lambda_state_max     = lambdas_state_max_convex_constraints[i,k]
-            constraint_max = trust_region_max_constraints(model, X, U, Xp, Up, k, i, Delta)
-            lambda_state_min     = lambdas_state_min_convex_constraints[i,k]
-            constraint_min = trust_region_min_constraints(model, X, U, Xp, Up, k, i, Delta)
+            lambda_trust     = lambdas_trust_convex_constraints[k]
+            constraint = trust_region_sphere_constraints(model, X, U, Xp, Up, k, Delta)
 
-            @constraint(solver_model, lambda_state_max <= 0.)
-            penalization += omega*(constraint_max-lambda_state_max)^2
-            @constraint(solver_model, lambda_state_min <= 0.)
-            penalization += omega*(constraint_min-lambda_state_min)^2
-        end
+            @constraint(solver_model, lambda_trust <= 0.)
+            @constraint(solver_model, -1e9-lambda_trust <= 0.)
+            penalization += omega*(constraint-lambda_trust)^2
+
     end
+
+    # @variable(solver_model, lambdas_trust_max_convex_constraints[i=1:x_dim, k=1:N])
+    # @variable(solver_model, lambdas_trust_min_convex_constraints[i=1:x_dim, k=1:N])
+    # for k = 1:N
+    #     for i = 1:x_dim
+    #         lambda_state_max     = lambdas_trust_max_convex_constraints[i,k]
+    #         constraint_max = trust_region_max_constraints(model, X, U, Xp, Up, k, i, Delta)
+    #         lambda_state_min     = lambdas_trust_min_convex_constraints[i,k]
+    #         constraint_min = trust_region_min_constraints(model, X, U, Xp, Up, k, i, Delta)
+
+    #         @constraint(solver_model, lambda_state_max <= 0.)
+    #         penalization += omega*(constraint_max-lambda_state_max)^2
+    #         @constraint(solver_model, lambda_state_min <= 0.)
+    #         penalization += omega*(constraint_min-lambda_state_min)^2
+    #     end
+    # end
     # -----------------
 
 
@@ -207,6 +218,7 @@ function add_penalties(scp_problem::GuSTOProblem, model)
             constraint = obstacle_constraint_convexified(model, X, U, Xp, Up, k, i)
 
             @constraint(solver_model, lambda <= 0.)
+            @constraint(solver_model, -1e9 - lambda <= 0.)
             penalization += omega*(constraint-lambda)^2
         end
     end
@@ -221,26 +233,26 @@ function satisfies_state_inequality_constraints(scp_problem::GuSTOProblem, model
 
 
     # STATE CONSTRAINTS
-    for k = 1:N
-        for i = 1:x_dim
-            constraint_max = state_max_convex_constraints(model, X, U, [], [], k, i)
-            constraint_min = state_min_convex_constraints(model, X, U, [], [], k, i)
-            if constraint_max > 0. || constraint_min > 0.
-                B_satisfies_constraints = false
-            end
-        end
-    end
+    # for k = 1:N
+    #     for i = 1:x_dim
+    #         constraint_max = state_max_convex_constraints(model, X, U, [], [], k, i)
+    #         constraint_min = state_min_convex_constraints(model, X, U, [], [], k, i)
+    #         if constraint_max > 0. || constraint_min > 0.
+    #             B_satisfies_constraints = false
+    #         end
+    #     end
+    # end
 
     # TRUST REGIONS
-    for k = 1:N
-        for i = 1:x_dim
-            constraint_max = trust_region_max_constraints(model, X, U, Xp, Up, k, i, Delta)
-            constraint_min = trust_region_min_constraints(model, X, U, Xp, Up, k, i, Delta)
-            if constraint_max > 0. || constraint_min > 0.
-                B_satisfies_constraints = false
-            end
-        end
-    end
+    # for k = 1:N
+    #     for i = 1:x_dim
+    #         constraint_max = trust_region_max_constraints(model, X, U, Xp, Up, k, i, Delta)
+    #         constraint_min = trust_region_min_constraints(model, X, U, Xp, Up, k, i, Delta)
+    #         if constraint_max > 0. || constraint_min > 0.
+    #             B_satisfies_constraints = false
+    #         end
+    #     end
+    # end
 
     # OBSTACLES
     for k = 1:N
