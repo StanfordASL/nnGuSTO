@@ -2,7 +2,8 @@ using LinearAlgebra
 using Ipopt
 using JuMP
 using DifferentialEquations
-using NLsolve
+# using NLsolve
+using MINPACK
 
 include("./Models/astrobee_se3.jl")
 include("./SCP/gusto_problem.jl")
@@ -51,15 +52,16 @@ function solve_shooting(scp_problem::GuSTOProblem,model,dual_variable)
     shooting_eval! = (F, p_init) -> parameterized_shooting_eval!(F, scp_problem, model, p_init)
 
     # Run Newton method
-    sol_newton = nlsolve(shooting_eval!, p0, iterations = 100, ftol=1e-6)
-    @show sol_newton.f_converged
+    # sol_newton = nlsolve(shooting_eval!, p0, iterations = 100, ftol=1e-6)
+    sol_newton = fsolve(shooting_eval!, p0, method = :hybrd)
+    # @show sol_newton.f_converged
 
     x_shooting = []
-    if sol_newton.f_converged
-        x_shooting = solve_shooting_once(scp_problem, model, sol_newton.zero)
-    else
-        x_shooting = []
-    end
+    # if sol_newton.f_converged
+    #     x_shooting = solve_shooting_once(scp_problem, model, sol_newton.zero)
+    # else
+    #     x_shooting = []
+    # end
 
 
     return x_shooting, sol_newton
