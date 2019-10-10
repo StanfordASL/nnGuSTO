@@ -63,8 +63,11 @@ function solve_shooting(scp_problem::GuSTOProblem,model,dual_variable)
     # end
 
     # Run fsolve from MINPACK.jl
-    sol_minpack = fsolve(shooting_eval!, p0, method = :hybrd)
+
+    sol_minpack = fsolve(shooting_eval!, p0, method = :hybrd, tol = 1e-12, iterations = 5000, epsfcn = 1e-19)
     @show sol_minpack.converged
+    @show sol_minpack.msg
+    @show sol_minpack.return_code
     
     x_shooting = []
 
