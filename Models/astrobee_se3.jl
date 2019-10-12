@@ -671,10 +671,10 @@ function get_lambda_shooting(model::Astrobee, x)
     lambda_min, lambda_max = model.lambda_min_bound, model.lambda_max_bound
 	
 	for i = 1:g_dim
-		if g[i] <= lambda_min[i]
-			lambda[i] = lambda_min[i]
-		elseif g[i] >= lambda_max[i]
-			lambda[i] = lambda_max[i]
+		if g[i] <= lambda_min
+			lambda[i] = lambda_min
+		elseif g[i] >= lambda_max
+			lambda[i] = lambda_max
 		else
 			lambda[i] = g[i]
 		end
