@@ -559,9 +559,9 @@ function f_dyn_shooting(x, u, p, model::Astrobee, X, U, Xp, Up, omega)
     fs[10]  += 1/2*( wz*qw - wy*qx + wx*qy)
     fs[11:13] = model.Jinv*(M - cross(w[:],(model.J*w)))    # wdot
 	
-	# Dual variables pdot = - p*df/dx + 2*omega*(g-lambda)*(dg/dx) = T1 + T2
+	  # Dual variables pdot = - p*df/dx + 2*omega*(g-lambda)*(dg/dx) = T1 + T2
     # T1 = - p*df/dx
-	T1 = zeros(model.x_dim)    
+	  T1 = zeros(model.x_dim)    
     T1[4] += -prx
     T1[5] += -pry
     T1[6] += -prz
