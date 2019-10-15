@@ -165,7 +165,7 @@ function plot_solutions(scp_problem::GuSTOProblem, model, X_all, U_all; x_shooti
 end
 
 
-function plot_circle(position_2d, radius; color=:blue, fig=-1)
+function plot_circle(position_2d, radius; color=:blue, fig=-1, lab="")
     # adapted from https://discourse.julialang.org/t/plot-a-circle-with-a-given-radius-with-plots-jl/23295
     function circleShape(h, k, r)
         theta = LinRange(0, 2*pi, 500)
@@ -176,13 +176,13 @@ function plot_circle(position_2d, radius; color=:blue, fig=-1)
         fig = plot(circleShape(position_2d[1],position_2d[2],radius), 
                 seriestype = [:shape,], lw = 0.5,
                 c = color, linecolor = :black,
-                legend = false, fillalpha = 0.5, aspect_ratio = 1)
+                legend = false, fillalpha = 0.5, aspect_ratio = 1, label = lab)
     return fig
     else
         plot!(fig, circleShape(position_2d[1],position_2d[2],radius), 
                     seriestype = [:shape,], lw = 0.5,
                     c = color, linecolor = :black,
-                    legend = false, fillalpha = 0.5, aspect_ratio = 1)
+                    legend = false, fillalpha = 0.5, aspect_ratio = 1, label = lab)
         return fig
     end
 end
