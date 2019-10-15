@@ -79,9 +79,11 @@ function Astrobee()
     omegamax = 1.0e9
     epsilon = 1.0e-3
     rho0 = 0.01
-    rho1 = 5.0
+    # rho1 = 5.0
+    # rho0 = 0.01
+    rho1 = 1000.0*0.05
     beta_succ = 2.
-    beta_fail = 0.1
+    beta_fail = 0.5
     gamma_fail = 5.
     convergence_threshold = 0.5
 
