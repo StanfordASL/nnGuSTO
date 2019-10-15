@@ -222,7 +222,7 @@ function derivative_collect_nonlinear_constraints(model::Astrobee, x)
     # g_dim         = 2*x_dim + num_obstacles
     g_dim         = num_obstacles
 
-    ε = 1.0e-3
+    ε = 1.0e-1
     
     xε = zeros(x_dim)
     x_ε = zeros(x_dim)
