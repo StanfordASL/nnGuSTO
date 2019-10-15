@@ -210,7 +210,7 @@ end
 
 function satisfies_state_inequality_constraints(scp_problem::GuSTOProblem, model, X, U, Xp, Up, Delta)
     B_satisfies_constraints = true
-
+    x_dim = model.x_dim
 
     # STATE CONSTRAINTS
     for k = 1:N
