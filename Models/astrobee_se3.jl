@@ -29,6 +29,8 @@ mutable struct Astrobee
 
     # sphere obstacles [(x,y),r]
     obstacles
+    # polygonal obstacles (see polygonal_obstacles.jl)
+    poly_obstacles
 
     # GuSTO Parameters
     Delta0
@@ -90,10 +92,15 @@ function Astrobee()
 
     # sphere obstacles [(x,y),r]
     obstacles = []
-    obs = [[0.0,0.175,0.], 0.1]
-    push!(obstacles, obs)
+    # obs = [[0.0,0.175,0.], 0.1]
+    # push!(obstacles, obs)
     obs = [[0.4,-0.10,0.], 0.1]
     push!(obstacles, obs)
+    
+    # polygonal obstacles
+    poly_obstacles = []
+    obs = PolygonalObstacle([0,0.2,0.2], 0.1 * ones(3))
+    push!(poly_obstacles, obs)
 
 
     Astrobee(x_dim, u_dim,
@@ -101,7 +108,7 @@ function Astrobee()
              model_radius, mass, J, Jinv,
              x_max, x_min, u_max, u_min,
              x_init, x_final, tf_guess,
-             obstacles,
+             obstacles, poly_obstacles,
                 Delta0,
                 omega0,
                 omegamax,
@@ -281,6 +288,36 @@ function obs_avoidance_penalty_grad_all_shooting(model::Astrobee, x)
 
     return r_dot
 end
+
+
+
+function poly_obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
+    obs        = model.poly_obstacles[obs_i]
+    bot_radius = model.model_radius
+
+    p_k  = X[1:3, k]
+    
+    dist = signed_distance(p_k, obs)
+
+    constraint = - ( dist - bot_radius )
+    return constraint
+end
+function poly_obstacle_constraint_convexified(model::Astrobee, X, U, Xp, Up, k, obs_i)
+    obs        = model.poly_obstacles[obs_i]
+    bot_radius = model.model_radius
+
+    p_k  = X[1:3, k]
+    p_kp = Xp[1:3, k]
+    
+    dist_prev =  signed_distance(p_kp, obs)
+    n_prev    = ∇signed_distance(p_kp, obs)
+
+    constraint = - ( dist_prev - bot_radius + sum(n_prev[i] * (p_k[i]-p_kp[i]) for i=1:3) )
+    return constraint
+end
+
+
+
 # --------------------------------------------
 
 

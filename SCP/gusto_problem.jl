@@ -191,12 +191,26 @@ function add_penalties(scp_problem::GuSTOProblem, model)
 
     # -----------------
     # OBSTACLES
+    # spheres
     Nb_obstacles = length(model.obstacles)
     @variable(solver_model, lambdas_obstacles[i=1:Nb_obstacles, k=1:N])
     for k = 1:N
         for i = 1:Nb_obstacles
             lambda     = lambdas_obstacles[i,k]
             constraint = obstacle_constraint_convexified(model, X, U, Xp, Up, k, i)
+
+            @constraint(solver_model, lambda <= 0.)
+            penalization += omega*(constraint-lambda)^2
+        end
+    end
+
+    # polygonal obstacles
+    Nb_poly_obstacles = length(model.poly_obstacles)
+    @variable(solver_model, lambdas_poly_obstacles[i=1:Nb_poly_obstacles, k=1:N])
+    for k = 1:N
+        for i = 1:Nb_poly_obstacles
+            lambda     = lambdas_poly_obstacles[i,k]
+            constraint = poly_obstacle_constraint_convexified(model, X, U, Xp, Up, k, i)
 
             @constraint(solver_model, lambda <= 0.)
             penalization += omega*(constraint-lambda)^2
@@ -235,9 +249,17 @@ function satisfies_state_inequality_constraints(scp_problem::GuSTOProblem, model
     end
 
     # OBSTACLES
+    # spheres
     for k = 1:N
         for i = 1:length(model.obstacles)
             constraint = obstacle_constraint(model, X, U, [], [], k, i)
+            if constraint >= 0.
+                B_satisfies_constraints = false
+            end
+        end
+    # polygonal obstacles
+        for i = 1:length(model.poly_obstacles)
+            constraint = poly_obstacle_constraint(model, X, U, [], [], k, i)
             if constraint >= 0.
                 B_satisfies_constraints = false
             end

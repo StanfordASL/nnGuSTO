@@ -4,6 +4,7 @@ using JuMP
 using DifferentialEquations
 using NLsolve
 
+include("./Models/polygonal_obstacles.jl")
 include("./Models/astrobee_se3.jl")
 include("./SCP/gusto_problem.jl")
 
