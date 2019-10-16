@@ -1,6 +1,6 @@
-export Astrobee
+export AstrobeeSE3
 
-mutable struct Astrobee
+mutable struct AstrobeeSE3
     # state: r v p ω
     x_dim
     u_dim
@@ -45,7 +45,7 @@ mutable struct Astrobee
     convergence_threshold
 end
 
-function Astrobee()
+function AstrobeeSE3()
     x_dim = 13
     u_dim = 6
 
@@ -103,7 +103,7 @@ function Astrobee()
     push!(poly_obstacles, obs)
 
 
-    Astrobee(x_dim, u_dim,
+    AstrobeeSE3(x_dim, u_dim,
              [], [], [],
              model_radius, mass, J, Jinv,
              x_max, x_min, u_max, u_min,
@@ -121,11 +121,11 @@ function Astrobee()
                 convergence_threshold)
 end
 
-function get_initial_gusto_parameters(m::Astrobee)
+function get_initial_gusto_parameters(m::AstrobeeSE3)
     return m.Delta0, m.omega0, m.omegamax, m.epsilon, m.rho0, m.rho1, m.beta_succ, m.beta_fail, m.gamma_fail, m.convergence_threshold
 end
 
-function initialize_trajectory(model::Astrobee, N::Int)
+function initialize_trajectory(model::AstrobeeSE3, N::Int)
   x_dim,  u_dim   = model.x_dim, model.u_dim
   x_init, x_final = model.x_init, model.x_final
   
@@ -135,7 +135,7 @@ function initialize_trajectory(model::Astrobee, N::Int)
   return X, U
 end
 
-function convergence_metric(model::Astrobee, X, U, Xp, Up)
+function convergence_metric(model::AstrobeeSE3, X, U, Xp, Up)
     N = length(X[1,:])
 
     # normalized maximum relative error between iterations
@@ -156,7 +156,7 @@ end
 
 # --------------------------------------------
 # -               OBJECTIVE                  -
-function true_cost(model::Astrobee, X, U, Xp, Up)
+function true_cost(model::AstrobeeSE3, X, U, Xp, Up)
     cost = 0.
     for k = 1:length(U[1,:])
         cost += sum(U[i,k]^2 for i = 1:model.u_dim)
@@ -171,20 +171,20 @@ end
 
 # --------------------------------------------
 # -               CONSTRAINTS                -
-function state_max_convex_constraints(model::Astrobee, X, U, Xp, Up, k, i)
+function state_max_convex_constraints(model::AstrobeeSE3, X, U, Xp, Up, k, i)
     return (X[i, k] - model.x_max[i])
 end
-function state_min_convex_constraints(model::Astrobee, X, U, Xp, Up, k, i)
+function state_min_convex_constraints(model::AstrobeeSE3, X, U, Xp, Up, k, i)
     return (model.x_min[i] - X[i, k])
 end
-function control_max_convex_constraints(model::Astrobee, X, U, Xp, Up, k, i)
+function control_max_convex_constraints(model::AstrobeeSE3, X, U, Xp, Up, k, i)
     return (U[i, k] - model.u_max[i])
 end
-function control_min_convex_constraints(model::Astrobee, X, U, Xp, Up, k, i)
+function control_min_convex_constraints(model::AstrobeeSE3, X, U, Xp, Up, k, i)
     return (model.u_min[i] - U[i, k])
 end
 
-function state_convex_constraints_penalty_shooting(model::Astrobee, x::Vector)
+function state_convex_constraints_penalty_shooting(model::AstrobeeSE3, x::Vector)
     x_dim, x_max, x_min = model.x_dim, model.x_max, model.x_min
 
     pdot = zeros(x_dim)
@@ -204,16 +204,16 @@ end
 
 
 
-# function trust_region_constraints(model::Astrobee, X, U, Xp, Up, k, Delta)
+# function trust_region_constraints(model::AstrobeeSE3, X, U, Xp, Up, k, Delta)
 #     return ( sum(X[i,k]^2 for i = 1:model.x_dim) - Delta )
 # end
-function trust_region_max_constraints(model::Astrobee, X, U, Xp, Up, k, i, Delta)
+function trust_region_max_constraints(model::AstrobeeSE3, X, U, Xp, Up, k, i, Delta)
     return ( (X[i, k]-Xp[i, k]) - Delta )
 end
-function trust_region_min_constraints(model::Astrobee, X, U, Xp, Up, k, i, Delta)
+function trust_region_min_constraints(model::AstrobeeSE3, X, U, Xp, Up, k, i, Delta)
     return ( -Delta - (X[i, k]-Xp[i, k]) )
 end
-function is_in_trust_region(model::Astrobee, X, U, Xp, Up, Delta)
+function is_in_trust_region(model::AstrobeeSE3, X, U, Xp, Up, Delta)
     B_is_inside = true
 
     for k = 1:length(X[1,:])
@@ -230,16 +230,16 @@ function is_in_trust_region(model::Astrobee, X, U, Xp, Up, Delta)
 end
 
 
-function state_initial_constraints(model::Astrobee, X, U, Xp, Up)
+function state_initial_constraints(model::AstrobeeSE3, X, U, Xp, Up)
     return (X[:,1] - model.x_init)
 end
-function state_final_constraints(model::Astrobee, X, U, Xp, Up)
+function state_final_constraints(model::AstrobeeSE3, X, U, Xp, Up)
     return (X[:,end] - model.x_final)
 end
 
 
 
-function obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
+function obstacle_constraint(model::AstrobeeSE3, X, U, Xp, Up, k, obs_i)
     p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
     bot_radius        = model.model_radius
     total_radius      = obs_radius+ bot_radius
@@ -251,7 +251,7 @@ function obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
     constraint = - ( dist - total_radius )
     return constraint
 end
-function obstacle_constraint_convexified(model::Astrobee, X, U, Xp, Up, k, obs_i)
+function obstacle_constraint_convexified(model::AstrobeeSE3, X, U, Xp, Up, k, obs_i)
     p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
     bot_radius        = model.model_radius
     total_radius      = obs_radius + bot_radius
@@ -266,7 +266,7 @@ function obstacle_constraint_convexified(model::Astrobee, X, U, Xp, Up, k, obs_i
     return constraint
 end
 
-function obs_avoidance_penalty_grad_all_shooting(model::Astrobee, x)
+function obs_avoidance_penalty_grad_all_shooting(model::AstrobeeSE3, x)
     r_dot = zeros(3)
 
     for obs_i = 1:length(model.obstacles)
@@ -291,7 +291,7 @@ end
 
 
 
-function poly_obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
+function poly_obstacle_constraint(model::AstrobeeSE3, X, U, Xp, Up, k, obs_i)
     obs        = model.poly_obstacles[obs_i]
     bot_radius = model.model_radius
 
@@ -302,7 +302,7 @@ function poly_obstacle_constraint(model::Astrobee, X, U, Xp, Up, k, obs_i)
     constraint = - ( dist - bot_radius )
     return constraint
 end
-function poly_obstacle_constraint_convexified(model::Astrobee, X, U, Xp, Up, k, obs_i)
+function poly_obstacle_constraint_convexified(model::AstrobeeSE3, X, U, Xp, Up, k, obs_i)
     obs        = model.poly_obstacles[obs_i]
     bot_radius = model.model_radius
 
@@ -351,7 +351,7 @@ end
 
 
 
-function f_dyn(x::Vector, u::Vector, model::Astrobee)
+function f_dyn(x::Vector, u::Vector, model::AstrobeeSE3)
   x_dim = model.x_dim
   f = zeros(x_dim)
 
@@ -373,7 +373,7 @@ function f_dyn(x::Vector, u::Vector, model::Astrobee)
   return f
 end
 
-function A_dyn(x::Vector, u::Vector, model::Astrobee)
+function A_dyn(x::Vector, u::Vector, model::AstrobeeSE3)
   x_dim = model.x_dim
   A = zeros(x_dim, x_dim)
 
@@ -422,7 +422,7 @@ function A_dyn(x::Vector, u::Vector, model::Astrobee)
   return A
 end
 
-function B_dyn(x::Vector, u::Vector, model::Astrobee)
+function B_dyn(x::Vector, u::Vector, model::AstrobeeSE3)
   x_dim, u_dim = model.x_dim, model.u_dim
 
   B = zeros(x_dim, u_dim)
@@ -433,7 +433,7 @@ function B_dyn(x::Vector, u::Vector, model::Astrobee)
   return B
 end
 
-function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee)
+function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::AstrobeeSE3)
     fs = zeros(2*model.x_dim)
 
     r, v, w             = x[1:3], x[4:6], x[11:13]
@@ -470,7 +470,7 @@ function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee)
 
     return fs
 end
-# function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::Astrobee)
+# function f_dyn_shooting(x::Vector, u::Vector, p::Vector, model::AstrobeeSE3)
 #     x_dot = zeros(2*model.x_dim)  
 #     J, Jinv, mass = model.J, model.Jinv, model.mass
 
@@ -517,7 +517,7 @@ end
 #   xdot[26] += -dot(pω, Jinv*a3) - 1/2*( pqx*qy - pqy*qx + pqz*qw - pqw*qz)
 #   return x_dot
 # end
-function get_control_shooting(x::Vector, p::Vector, model::Astrobee)
+function get_control_shooting(x::Vector, p::Vector, model::AstrobeeSE3)
     pv, pw = p[4:6], p[11:13]
 
     F = pv / (2. * model.mass)

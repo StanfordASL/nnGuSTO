@@ -1,4 +1,4 @@
-export Astrobee
+export PolygonalObstacle
 
 mutable struct PolygonalObstacle
     c::Vector # center
@@ -157,7 +157,7 @@ function signed_distance(x::Vector, obs::PolygonalObstacle)
   # is inside
   else
     return (norm(x-c) - sqrt(dx^2+dy^2+dz^2)) # not quite accurate, but good enough for obstacle avoidance
-  end
+  end 
 end
 
 
