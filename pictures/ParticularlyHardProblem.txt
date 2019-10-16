@@ -1,0 +1,74 @@
+ParticularlyHardProblem
+
+N = 50
+MAX_ITERATIONS_NB = 100
+
+model = AstrobeeSE3()
+
+# Set up environment
+model.x_max[1:3] = [10.0; 10.0; 1.0]
+model.x_min[1:3] = [0.0; 0.0; 0.0]
+
+obstacles = []
+# obs = [[0.0,0.0,0.0], 6.0]
+# push!(obstacles, obs)
+# obs = [[5.0,5.0,0.0], 1.3]
+# push!(obstacles, obs)
+# obs = [[3.0,5.0,0.0], 1.3]
+# push!(obstacles, obs)
+# obs = [[5.0,3.0,0.0], 1.3]
+# push!(obstacles, obs)
+# obs = [[7.0,3.0,0.0], 1.0]
+# push!(obstacles, obs)
+model.obstacles = obstacles
+
+poly_obstacles = []
+obs = PolygonalObstacle([2.5,2.5,0], [5.0, 5.0, 2.0])
+push!(poly_obstacles, obs)
+obs = PolygonalObstacle([7.0,3.0,0], [1.0, 1.0, 2.0])
+push!(poly_obstacles, obs)
+model.poly_obstacles = poly_obstacles
+
+model.tf_guess = 110.
+model.convergence_threshold = 0.7
+
+model.x_init = [1.0;7.0;0.5;  0;0;0;  0.;0.;0.; 1.;  0;0;0]
+model.x_final = [8.0 ;1.0;0.5;  0;0;0;  0.;0.;1.; 0.;  0;0;0]
+
+
+This one took 90 iterations????!??!?
+IDK Why
+
+N = 50
+MAX_ITERATIONS_NB = 100
+
+model = AstrobeeSE3()
+
+# Set up environment
+model.x_max[1:3] = [10.0; 10.0; 1.0]
+model.x_min[1:3] = [0.0; 0.0; 0.0]
+
+obstacles = []
+# obs = [[0.0,0.0,0.0], 6.0]
+# push!(obstacles, obs)
+model.obstacles = obstacles
+
+poly_obstacles = []
+obs = PolygonalObstacle([2.5,2.5,0], [5.0, 5.0, 2.0])
+push!(poly_obstacles, obs)
+# obs = PolygonalObstacle([7.0,3.0,0], [1.0, 1.0, 2.0])
+# push!(poly_obstacles, obs)
+model.poly_obstacles = poly_obstacles
+
+model.tf_guess = 110.
+model.convergence_threshold = 0.7
+
+model.x_init = [1.0;7.0;0.5;  0;0;0;  0.;0.;0.; 1.;  0;0;0]
+model.x_final = [8.0 ;1.0;0.5;  0;0;0;  0.;0.;1.; 0.;  0;0;0]
+
+time_start = time_ns()
+isConverged, X_all, U_all = solve_gusto(model, N, MAX_ITERATIONS_NB, false)
+gusto_solve_time = (time_ns() - time_start)/10^9
+@show gusto_solve_time
+@show size(X_all)
+@show size(U_all)
