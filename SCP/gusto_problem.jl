@@ -1,6 +1,7 @@
 export GuSTOProblem
 
 mutable struct GuSTOProblem
+    N
     dt
 
     omega
@@ -17,6 +18,7 @@ mutable struct GuSTOProblem
 end
 
 function GuSTOProblem(model, N, Xp, Up, solver=Ipopt.Optimizer)
+    N     = N
     dt    = model.tf_guess / (N-1)
     omega = model.omega0
     Delta = model.Delta0
@@ -26,7 +28,7 @@ function GuSTOProblem(model, N, Xp, Up, solver=Ipopt.Optimizer)
     X = @variable(solver_model, X[1:model.x_dim,1:N  ])
     U = @variable(solver_model, U[1:model.u_dim,1:N-1])
 
-    GuSTOProblem(dt,
+    GuSTOProblem(N, dt,
                  omega, Delta,
                  solver_model,
                  X, U, Xp, Up,
@@ -56,6 +58,7 @@ end
 
 function reset_problem(scp_problem::GuSTOProblem, model, solver=Ipopt.Optimizer)
     scp_problem.solver_model = Model(with_optimizer(solver, print_level=0))
+    N = scp_problem.N
     X = @variable(scp_problem.solver_model, X[1:model.x_dim,1:N  ])
     U = @variable(scp_problem.solver_model, U[1:model.u_dim,1:N-1])
     scp_problem.X       = X
@@ -225,7 +228,7 @@ end
 function satisfies_state_inequality_constraints(scp_problem::GuSTOProblem, model, X, U, Xp, Up, Delta)
     B_satisfies_constraints = true
     x_dim = model.x_dim
-
+    N = scp_problem.N
     # STATE CONSTRAINTS
     for k = 1:N
         for i = 1:x_dim
