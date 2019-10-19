@@ -141,10 +141,10 @@ function convergence_metric(model::AstrobeeSE3, X, U, Xp, Up)
     # normalized maximum relative error between iterations
     max_num, max_den = -Inf, -Inf
     for k in 1:N
-        val = norm(X[:,k]-Xp[:,k])
+        val = norm(X[1:3,k]-Xp[1:3,k])
         max_num = val > max_num ? val : max_num
 
-        val = norm(X[:,k])
+        val = norm(X[1:3,k])
         max_den = val > max_den ? val : max_den
     end
     return max_num*100.0/max_den
