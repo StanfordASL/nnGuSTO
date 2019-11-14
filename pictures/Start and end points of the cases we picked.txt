@@ -1,0 +1,42 @@
+Start and end points of the cases we picked
+
+2x Good Speedup!
+x_start= [0.5, 7.0, 0.5]
+x_goal = [6.0, 2.0, 0.5]
+
+5x speedup 
+x_start= [3.0, 6.0, 0.5]
+x_goal = [7.0, 0.5, 0.5]
+
+11x Insane levels of speedup
+x_start= [0.9375, 8.0, 0.5]
+x_goal = [7.5, 2.1875, 0.5]
+
+almost perfect 1.5x
+x_start= [0.5, 6.125, 0.5]
+x_goal = [9.0, 2.75, 0.5]
+
+NN helped you avoid both obstacles ----- 1 and 2 ARE THE SAME! PICK ONE!
+x_start= [2.0, 6., 0.5]
+x_goal = [9.0, 2.1875, 0.5]
+
+NN helped you avoid both obstacles 2 ----- 1 and 2 ARE THE SAME! PICK ONE!
+x_start= [2.25, 5.8125, 0.5]
+x_goal = [9.5, 2.1875, 0.5]
+
+NN helped you avoid obstacles 3
+x_start= [0.5, 6.125, 0.5]
+x_goal = [9.0, 2.75, 0.5]
+
+NN speedup and switches homotopy class
+x_start= [2.0, 6., 0.5]
+x_goal = [8.0, 1.75, 0.5]
+
+Simple case not bad
+x_start= [3.125, 7.6875, 0.5]
+x_goal = [9.5, 3.875, 0.5]
+
+Simple case not bad 2
+x_start= [5.55555556, 1.11111111, 0.5]
+x_goal = [7.77777778, 6.66666667, 0.5]
+
