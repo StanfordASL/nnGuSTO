@@ -70,7 +70,8 @@ function AstrobeeSE3()
 
     # problem 
     x_init  = [-0.25;0.4;0;  0;0;0;  0.;0.;0.; 1.;  0;0;0]
-    x_final = [0.7 ;-0.5;0;  0;0;0;  0.;0.;0.; 1.;  0;0;0]
+    #x_final = [0.7 ;-0.5;0;  0;0;0;  0.;0.;0.; 1.;  0;0;0]
+    x_final = [0.7;-0.5;0;  0;0;0;  1.;0.;0.; 0.;  0;0;0]
 
 
     tf_guess = 110.  # s
@@ -79,28 +80,26 @@ function AstrobeeSE3()
     Delta0 = 1000.
     omega0 = 1.
     omegamax = 1.0e9
-    epsilon = 1.0e-3
-    rho0 = 0.01
-    # rho1 = 5.0
-    # rho0 = 0.01
-    rho1 = 1000.0*0.05
+    epsilon = 0.0#1.0e-5
+    rho0 = 10.
+    rho1 = 20.
     beta_succ = 2.
     beta_fail = 0.5
     gamma_fail = 5.
-    convergence_threshold = 0.5
+    convergence_threshold = 2.5
 
 
     # sphere obstacles [(x,y),r]
     obstacles = []
-    # obs = [[0.0,0.175,0.], 0.1]
-    # push!(obstacles, obs)
-    obs = [[0.4,-0.10,0.], 0.1]
+    obs = [[0.0,0.175,0.], 0.1]
+    push!(obstacles, obs)
+    obs = [[0.4,-0.25,0.], 0.1]
     push!(obstacles, obs)
     
     # polygonal obstacles
     poly_obstacles = []
-    obs = PolygonalObstacle([0,0.2,0.2], 0.1 * ones(3))
-    push!(poly_obstacles, obs)
+    # obs = PolygonalObstacle([0,0.2,0.2], 0.1 * ones(3))
+    # push!(poly_obstacles, obs)
 
 
     AstrobeeSE3(x_dim, u_dim,
@@ -266,28 +265,28 @@ function obstacle_constraint_convexified(model::AstrobeeSE3, X, U, Xp, Up, k, ob
     return constraint
 end
 
-function obs_avoidance_penalty_grad_all_shooting(model::AstrobeeSE3, x)
-    r_dot = zeros(3)
+# function obs_avoidance_penalty_grad_all_shooting(model::AstrobeeSE3, x)
+#     r_dot = zeros(3)
 
-    for obs_i = 1:length(model.obstacles)
-        p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
-        bot_radius        = model.model_radius
-        total_radius      = obs_radius + bot_radius
+#     for obs_i = 1:length(model.obstacles)
+#         p_obs, obs_radius = model.obstacles[obs_i][1], model.obstacles[obs_i][2]
+#         bot_radius        = model.model_radius
+#         total_radius      = obs_radius + bot_radius
 
-        p_k  = x[1:3]
+#         p_k  = x[1:3]
     
-        dist = norm(p_k - p_obs, 2)
-        true_dist = dist - total_radius
+#         dist = norm(p_k - p_obs, 2)
+#         true_dist = dist - total_radius
 
-        n_hat = (p_k-p_obs) / dist
+#         n_hat = (p_k-p_obs) / dist
 
-        if true_dist < 0
-            r_dot += n_hat
-        end
-    end
+#         if true_dist < 0
+#             r_dot += n_hat
+#         end
+#     end
 
-    return r_dot
-end
+#     return r_dot
+# end
 
 
 
@@ -517,13 +516,13 @@ end
 #   xdot[26] += -dot(pω, Jinv*a3) - 1/2*( pqx*qy - pqy*qx + pqz*qw - pqw*qz)
 #   return x_dot
 # end
-function get_control_shooting(x::Vector, p::Vector, model::AstrobeeSE3)
-    pv, pw = p[4:6], p[11:13]
+# function get_control_shooting(x::Vector, p::Vector, model::AstrobeeSE3)
+#     pv, pw = p[4:6], p[11:13]
 
-    F = pv / (2. * model.mass)
-    M = model.Jinv*pw/2.
+#     F = pv / (2. * model.mass)
+#     M = model.Jinv*pw/2.
 
-    us = vcat(F, M)
+#     us = vcat(F, M)
     
-    return us
-end
+#     return us
+# end
