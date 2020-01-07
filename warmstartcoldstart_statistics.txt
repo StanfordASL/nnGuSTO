@@ -7,3 +7,19 @@ Complex cases
 Mean: Cold: 16.59 Warm: 7.20
 Std Dev: Cold: 8.36 Warm: 5.71
 Worst: Cold: 52 Warm: 34
+
+All 1000 cases (with a shortcut)
+mean(warm_conv_metric) = 0.750004595478076
+mean(cold_conv_metric) = 1.1335149130712179
+std(warm_conv_metric) = 1.394242279910918
+std(cold_conv_metric) = 1.713421542773033
+maximum(warm_conv_metric) = 4.899663671154117
+maximum(cold_conv_metric) = 4.968895445687714
+
+Complex cases
+mean(warm_conv_metric_only_large_iter) = 0.6057817521752261
+mean(cold_conv_metric_only_large_iter) = 1.4413132423921275
+std(warm_conv_metric_only_large_iter) = 0.25312734330841913
+std(cold_conv_metric_only_large_iter) = 1.7991972056720287
+maximum(warm_conv_metric_only_large_iter) = 0.8747646662963464
+maximum(cold_conv_metric_only_large_iter) = 4.121620490926093
