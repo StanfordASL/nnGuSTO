@@ -1,0 +1,9 @@
+All 1000 cases
+Mean: Cold: 4.03 Warm 3.33
+Std Dev: Cold: 4.69 Warm: 3.25
+Worst: cold: 52 warm: 34
+
+Complex cases
+Mean: Cold: 16.59 Warm: 7.20
+Std Dev: Cold: 8.36 Warm: 5.71
+Worst: Cold: 52 Warm: 34
