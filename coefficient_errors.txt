@@ -1,0 +1,218 @@
+Coefficient errors
+
+Unnormalized
+	By dimension
+	x_dim errors
+	x_dim:1
+	  mean:0.014221660987901195
+	  std dev:0.039783395344730514
+	  max:0.43605030833816194
+	x_dim:2
+	  mean:0.013664602712519987
+	  std dev:0.040912343049258004
+	  max:0.5744775841935041
+	x_dim:3
+	  mean:0.0002892284025742299
+	  std dev:0.0018558926794057908
+	  max:0.04842881039260061
+	x_dim:4
+	  mean:7.756717230155316e-5
+	  std dev:0.0005618676925507756
+	  max:0.011509794053849106
+	x_dim:5
+	  mean:4.876782450748903e-5
+	  std dev:0.0006449281064091836
+	  max:0.028577009828066657
+	x_dim:6
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:7
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:8
+	  mean:0.009706931350611006
+	  std dev:0.019415605191942704
+	  max:0.04952160909876391
+	x_dim:9
+	  mean:9.067204811041846e-5
+	  std dev:0.0005667801210552535
+	  max:0.015738314898348166
+	x_dim:10
+	  mean:2.856281090440486e-5
+	  std dev:0.0002504474794594828
+	  max:0.009038211597058754
+	x_dim:11
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:12
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:13
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+
+	u_dim errors
+	u_dim:1
+	  mean:0.00023247174030181317
+	  std dev:0.0011833471456104538
+	  max:0.03448475935401057
+	u_dim:2
+	  mean:0.00014824594070910987
+	  std dev:0.0007909344228645562
+	  max:0.0286392366487219
+	u_dim:3
+	  mean:6.881398640065326e-6
+	  std dev:0.0002343402722340274
+	  max:0.009988377011856581
+	u_dim:4
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	u_dim:5
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	u_dim:6
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+
+
+	By coefficient
+	coeff:1
+	  mean:0.009986503468715366
+	  std dev:0.031356594111188824
+	  max:0.5744775841935041
+	coeff:2
+	  mean:0.0001491787389376016
+	  std dev:0.001423237793925144
+	  max:0.08688588165411609
+	coeff:3
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	coeff:4
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	coeff:5
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	
+
+
+Normalized
+	By dimension
+	x_dim errors
+	x_dim:1
+	  mean:1.3518408238458206
+	  std dev:44.291535435099846
+	  max:3072.353908906885
+	x_dim:2
+	  mean:0.3839173077312776
+	  std dev:9.312523806100225
+	  max:505.09614746874274
+	x_dim:3
+	  mean:0.003799536782488976
+	  std dev:0.05531809152488577
+	  max:1.0107863398186785
+	x_dim:4
+	  mean:0.016935242179954468
+	  std dev:0.2971862599313229
+	  max:19.439655021380258
+	x_dim:5
+	  mean:0.005504738147749714
+	  std dev:0.06641899645974235
+	  max:3.2291878672274965
+	x_dim:6
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:7
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:8
+	  mean:7.159555567839997e7
+	  std dev:5.077908312600204e9
+	  max:3.816830358677339e11
+	x_dim:9
+	  mean:0.01994499738974762
+	  std dev:0.44994853487772407
+	  max:28.6910043956339
+	x_dim:10
+	  mean:2.8644298621542213e-5
+	  std dev:0.0002504693137609698
+	  max:0.008992845290660995
+	x_dim:11
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:12
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	x_dim:13
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+
+	u_dim errors
+	u_dim:1
+	  mean:0.024970961206973542
+	  std dev:0.48922300201255525
+	  max:34.6844567254208
+	u_dim:2
+	  mean:0.019058899407745893
+	  std dev:0.20465992069827252
+	  max:8.069315550146529
+	u_dim:3
+	  mean:0.0008849612475849432
+	  std dev:0.029737856462018226
+	  max:1.000007429045618
+	u_dim:4
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	u_dim:5
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	u_dim:6
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+
+
+
+
+
+
+	By coefficient
+	coeff:1
+	  mean:1.8840936164746515e7
+	  std dev:2.604932926103762e9
+	  max:3.816830358677339e11
+	coeff:2
+	  mean:0.020855085492094007
+	  std dev:0.42227306782386426
+	  max:41.7312746013203
+	coeff:3
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	coeff:4
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+	coeff:5
+	  mean:0.0
+	  std dev:0.0
+	  max:0.0
+
