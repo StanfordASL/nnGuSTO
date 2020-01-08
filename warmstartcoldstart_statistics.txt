@@ -8,6 +8,27 @@ Mean: Cold: 16.59 Warm: 7.20
 Std Dev: Cold: 8.36 Warm: 5.71
 Worst: Cold: 52 Warm: 34
 
+
+Actually all 1000
+mean(warm_conv_metric) = 0.7988902918926554
+mean(cold_conv_metric) = 1.0479369442040591
+std(warm_conv_metric) = 1.3684131509855828
+std(cold_conv_metric) = 1.5883303868452685
+maximum(warm_conv_metric) = 4.958050060899814
+maximum(cold_conv_metric) = 4.99939537712999
+
+Complex cases 
+mean(warm_conv_metric_only_large_iter) = 1.87350922606617
+mean(cold_conv_metric_only_large_iter) = 2.0307780963825275
+std(warm_conv_metric_only_large_iter) = 1.569509492479102
+std(cold_conv_metric_only_large_iter) = 1.6791937398805457
+maximum(warm_conv_metric_only_large_iter) = 4.915609698141871
+maximum(cold_conv_metric_only_large_iter) = 4.9492649832469455
+
+
+
+
+
 All 1000 cases (with a shortcut)
 mean(warm_conv_metric) = 0.750004595478076
 mean(cold_conv_metric) = 1.1335149130712179
@@ -23,3 +44,4 @@ std(warm_conv_metric_only_large_iter) = 0.25312734330841913
 std(cold_conv_metric_only_large_iter) = 1.7991972056720287
 maximum(warm_conv_metric_only_large_iter) = 0.8747646662963464
 maximum(cold_conv_metric_only_large_iter) = 4.121620490926093
+
