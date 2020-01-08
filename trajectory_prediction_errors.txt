@@ -1,0 +1,86 @@
+Trajectory prediction errors
+(Both x and u dimensions)
+
+x_dim errors
+x_dim:1
+  mean:0.03530512359982492
+  std dev:0.0708403012706669
+  max:1.1283872078081107
+x_dim:2
+  mean:0.03738788236431822
+  std dev:0.05386596985924826
+  max:0.9720061515714169
+x_dim:3
+  mean:0.07062476881244166
+  std dev:0.09214210077457063
+  max:0.7436711290503465
+x_dim:4
+  mean:0.16783422964636519
+  std dev:0.195519564224623
+  max:1.4263760167183976
+x_dim:5
+  mean:0.19228960489642125
+  std dev:0.2123549434704714
+  max:1.3813419902505306
+x_dim:6
+  mean:0.0
+  std dev:0.0
+  max:0.0
+x_dim:7
+  mean:0.0
+  std dev:0.0
+  max:0.0
+x_dim:8
+  mean:0.0006934549167154599
+  std dev:0.02331081477156118
+  max:0.7836040558884697
+x_dim:9
+  mean:0.01750279605023573
+  std dev:0.02013721072418061
+  max:0.15774016005322544
+x_dim:10
+  mean:0.00496710658329544
+  std dev:0.005522606042420806
+  max:0.04846240224753879
+x_dim:11
+  mean:0.04010060603992594
+  std dev:0.048404106749486586
+  max:0.5148002046275947
+x_dim:12
+  mean:0.0
+  std dev:0.0
+  max:0.0
+x_dim:13
+  mean:0.0
+  std dev:0.0
+  max:0.0
+
+u_dim errors
+u_dim:1
+  mean:0.052855233037471805
+  std dev:0.16063512813119243
+  max:1.2871465043750958
+u_dim:2
+  mean:0.04944958119439313
+  std dev:0.16721124818957817
+  max:1.4258526986552595
+u_dim:3
+  mean:0.0
+  std dev:0.0
+  max:0.0
+u_dim:4
+  mean:0.0
+  std dev:0.0
+  max:0.0
+u_dim:5
+  mean:0.0
+  std dev:0.0
+  max:0.0
+u_dim:6
+  mean:0.0
+  std dev:0.0
+  max:0.0
+
+Addressing comment:
+Also, the trajectory prediction errors seem big (20%). any idea why?
+Also, could you get those errors for each dimension, including the controls so we have them?
