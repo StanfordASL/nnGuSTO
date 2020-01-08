@@ -1,4 +1,10 @@
 Trajectory prediction errors
+
+Aggregated across all dimensions
+mean:0.03521107300744256
+std dev:0.10590140358843902
+max:1.4263760167183976
+
 (Both x and u dimensions)
 
 x_dim errors
