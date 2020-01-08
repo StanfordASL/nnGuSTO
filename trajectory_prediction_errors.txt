@@ -90,3 +90,28 @@ u_dim:6
 Addressing comment:
 Also, the trajectory prediction errors seem big (20%). any idea why?
 Also, could you get those errors for each dimension, including the controls so we have them?
+
+position:
+  mean:4.78%
+  std dev:7.57%
+  max:112.84%
+velocity:
+  mean:12.00%
+  std dev:18.73%
+  max:142.64%
+quaternion attitude:
+  mean:0.58%
+  std dev:1.71%
+  max:78.36%
+angular velocity:
+  mean:1.34%
+  std dev:3.37%
+  max:51.48%
+ input force:
+  mean:3.41%
+  std dev:13.60%
+  max:142.59%
+input torque:
+  mean:0.00%
+  std dev:0.00%
+  max:0.00%
