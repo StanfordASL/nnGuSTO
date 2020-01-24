@@ -4,10 +4,10 @@ using JuMP
 using DifferentialEquations
 using NLsolve
 
-include("./Models/polygonal_obstacles.jl")
-include("./Models/astrobee_se3.jl")
-include("./SCP/gusto_problem.jl")
-include("./Utils/quat_functions.jl")
+include("./src/models/polygonal_obstacles.jl")
+include("./src/models/astrobee_se3.jl")
+include("./src/scp/gusto_problem.jl")
+include("./src/utils/quat_functions.jl")
 
 
 function solveRK4(scp_problem::GuSTOProblem,model,dynamics::Function,dim,N,tf,z0,t0=0.0)
